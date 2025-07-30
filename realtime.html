@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="google" content="notranslate">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Realtime Data - Monitoring Tanah</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #a8e063, #56ab2f);
+      color: white;
+      display: flex;
+    }
+    .sidebar {
+      width: 250px;
+      padding: 20px;
+      background: linear-gradient(to bottom, #2e7d32, #ffffff);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translateX(0);
+      transition: transform 0.3s ease-in-out;
+      z-index: 1001;
+    }
+    .sidebar h2 { margin-top: 40px; font-size: 22px; margin-bottom: 30px; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar ul li { margin: 15px 0; }
+    .sidebar ul li a { color: white; text-decoration: none; }
+
+    .main {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+
+    .topbar {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+
+    .sensor-box {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .sensor {
+      flex: 1 1 300px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .sensor h3 { margin-bottom: 10px; }
+    .sensor canvas { width: 100% !important; max-height: 200px; }
+
+    .gauge-label {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+      padding: 4px 12px;
+      background-color: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+    }
+
+    .timestamp {
+      margin-top: 30px;
+      font-style: italic;
+      text-align: center;
+      color: #f0f0f0;
+    }
+
+    .toggle-sound {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .toggle-sound label {
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .toggle-sound input {
+      transform: scale(1.5);
+      margin-left: 10px;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #f44336;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+      display: none;
+    }
+
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 10px;
+      color: white;
+      background: none;
+      border: none;
+      z-index: 1002;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.active { transform: translateX(0); }
+      .hamburger { display: block; }
+      .main { padding: 20px; margin: 0; margin-top: 50px; }
+      .topbar { text-align: center; }
+      .overlay.active { display: block; }
+    }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD9vzTunp4P3qZynga-6kWf5ChjnBcgInU",
+      authDomain: "sistem-monitoring-esp32-1f8a3.firebaseapp.com",
+      databaseURL: "https://sistem-monitoring-esp32-1f8a3-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "sistem-monitoring-esp32-1f8a3",
+      storageBucket: "sistem-monitoring-esp32-1f8a3.appspot.com",
+      messagingSenderId: "389502240374",
+      appId: "1:389502240374:web:369c54e175ce48459c8157",
+      measurementId: "G-1LK2BRC4PG"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+</head>
+<body>
+  <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="sidebar" id="sidebar">
+    <h2>IoT Monitoring</h2>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+      <li><a href="history.html"><i class="fas fa-history"></i> Riwayat Data</a></li>
+      <li><a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      <li><a href="panduan.html"><i class="fas fa-book"></i> Panduan Sistem</a></li>
+    </ul>
+    <div style="margin-top: 40px; background-color: #1b5e20; padding: 12px; border-radius: 8px; text-align: center; font-size: 12px; color: #f0f0f0;">
+      <strong>Developer</strong><br>
+      Ahmad Farzi Anwar<br>
+      <a href="mailto:ahmadfarzianwar4@gmail.com" style="color: #a5d6a7;">ahmadfarzianwar4@gmail.com</a><br>
+      <a href="https://instagram.com/_ahmadfarzi29" target="_blank" style="color: #a5d6a7;">_ahmadfarzi29</a>
+    </div>
+    <div style="margin-top: 20px; background-color: #ffffff; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; color: #2e7d32;">
+      <i class="fas fa-circle" style="color: #4caf50;"></i> <span style="margin-left: 6px;">Sistem Aktif</span>
+    </div>      
+  </div>
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <div class="main">
+    <div class="topbar">Pemantauan Data Sensor Secara Realtime</div>
+    <div class="sensor-box">
+      <div class="sensor">
+        <h3><i class="fas fa-thermometer-half"></i> Suhu</h3>
+        <canvas id="suhuChart"></canvas>
+        <div class="gauge-label" id="suhuLabel">-- °C</div>
+      </div>
+      <div class="sensor">
+        <h3><i class="fas fa-tint"></i> Kelembaban</h3>
+        <canvas id="kelembabanChart"></canvas>
+        <div class="gauge-label" id="kelembabanLabel">-- %</div>
+      </div>
+    </div>
+    <div class="timestamp">Terakhir diperbarui: <span id="timestamp">--</span></div>
+    <div class="toggle-sound">
+      <label>
+        🔊 Notifikasi Suara
+        <input type="checkbox" id="soundToggle" checked />
+      </label>
+    </div>
+    <div class="notification" id="notification"></div>
+    <audio id="alert-sound" src="Notifikasi.mp3" preload="auto"></audio>
+    <footer style="text-align: center; padding: 20px; color: rgb(17, 16, 16); font-size: 14px;">
+      © 2025 Ahmad Farzi Anwar. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('overlay').classList.toggle('active');
+    }
+
+    const soundToggle = document.getElementById("soundToggle");
+    const alertSound = document.getElementById("alert-sound");
+    const notificationElement = document.getElementById("notification");
+    let isNotificationActive = false;
+    let notificationTimer;
+
+    alertSound.loop = true;
+    const soundEnabled = localStorage.getItem("soundEnabled");
+    if (soundEnabled !== null) {
+      soundToggle.checked = soundEnabled === "true";
+    }
+
+    function checkAndPlaySound() {
+      if (soundToggle.checked && isNotificationActive) {
+        alertSound.play().catch(e => console.error("Gagal memutar suara:", e));
+      } else {
+        alertSound.pause();
+        alertSound.currentTime = 0;
+      }
+    }
+
+    soundToggle.addEventListener("change", () => {
+      localStorage.setItem("soundEnabled", soundToggle.checked);
+      checkAndPlaySound();
+    });
+
+    function showNotification(message) {
+      notificationElement.textContent = message;
+      notificationElement.style.display = "block";
+      isNotificationActive = true;
+      checkAndPlaySound();
+      clearTimeout(notificationTimer);
+      notificationTimer = setTimeout(hideNotification, 5000);
+    }
+
+    function hideNotification() {
+      notificationElement.style.display = "none";
+      isNotificationActive = false;
+      checkAndPlaySound();
+    }
+
+    const suhuChart = new Chart(document.getElementById('suhuChart').getContext('2d'), {
+      type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: ['#2196f3', '#e0e0e0'], borderWidth: 0, }] }, options: { plugins: { legend: { display: false } }, cutout: '80%', }
+    });
+    const kelembabanChart = new Chart(document.getElementById('kelembabanChart').getContext('2d'), {
+      type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: ['#4caf50', '#e0e0e0'], borderWidth: 0, }] }, options: { plugins: { legend: { display: false } }, cutout: '80%', }
+    });
+
+    function renderData(data) {
+      if (!data) return;
+
+      const suhu = parseFloat(data.suhu);
+      const kelembaban = parseFloat(data.kelembaban);
+
+      const waktuData = data.timestamp || "Menunggu data...";
+      document.getElementById("timestamp").innerText = waktuData;
+
+      suhuChart.data.datasets[0].data = [suhu, 100 - suhu];
+      kelembabanChart.data.datasets[0].data = [kelembaban, 100 - kelembaban];
+      suhuChart.update();
+      kelembabanChart.update();
+      document.getElementById("suhuLabel").innerText = suhu + " °C";
+      document.getElementById("kelembabanLabel").innerText = kelembaban + " %";
+
+      updateGaugeColors(suhu, kelembaban);
+      
+      let notificationMessages = [];
+      if (suhu > 30) notificationMessages.push("⚠️ Suhu terlalu tinggi!");
+      if (kelembaban < 40) notificationMessages.push("⚠️ Kelembaban terlalu rendah!");
+      if (kelembaban > 70) notificationMessages.push("💧 Kelembaban terlalu tinggi!");
+      if (notificationMessages.length > 0) {
+        showNotification(notificationMessages.join(' | '));
+      } else if (isNotificationActive) {
+        hideNotification();
+      }
+    }
+
+    function updateGaugeColors(suhu, kelembaban) {
+      suhuChart.data.datasets[0].backgroundColor[0] = suhu > 30 ? '#f44336' : '#2196f3';
+      if (kelembaban > 70) {
+        kelembabanChart.data.datasets[0].backgroundColor[0] = '#f57c00'; 
+      } else if (kelembaban < 40) {
+        kelembabanChart.data.datasets[0].backgroundColor[0] = '#ff9800'; 
+      } else {
+        kelembabanChart.data.datasets[0].backgroundColor[0] = '#4caf50'; 
+      }
+      suhuChart.update();
+      kelembabanChart.update();
+    }
+
+    // --- LOGIKA PENGAMBILAN DATA DENGAN FALLBACK ---
+    const sensorRef = db.ref("latestSensorData");
+
+    // Langkah 1: Coba ambil data dari latestSensorData saat halaman dibuka.
+    sensorRef.once("value", (snapshot) => {
+      if (snapshot.exists()) {
+        // Jika ada, langsung tampilkan.
+        console.log("Data awal dari latestSensorData berhasil dimuat.");
+        renderData(snapshot.val());
+      } else {
+        // JIKA KOSONG, lakukan fallback: ambil data terakhir dari history.
+        console.log("latestSensorData kosong. Mengambil data terakhir dari sensorHistory...");
+        const historyRef = db.ref("sensorHistory").limitToLast(1);
+        historyRef.once("value", (historySnapshot) => {
+          if (historySnapshot.exists()) {
+            const historyData = historySnapshot.val();
+            const lastKey = Object.keys(historyData)[0];
+            const lastEntry = historyData[lastKey];
+            
+            // Format data agar sesuai dengan yang diharapkan fungsi renderData
+            const formattedData = {
+              suhu: lastEntry.suhu,
+              kelembaban: lastEntry.kelembaban,
+              timestamp: lastKey 
+            };
+            console.log("Data terakhir dari history berhasil dimuat.");
+            renderData(formattedData);
+          } else {
+            // Jika history juga kosong, tampilkan pesan.
+            console.log("History juga kosong. Tidak ada data untuk ditampilkan.");
+            document.getElementById("timestamp").innerText = "Tidak ada data riwayat.";
+          }
+        });
+      }
+    });
+
+    // Langkah 2: Setelah data awal dimuat, pasang pendengar untuk data-data BARU.
+    sensorRef.on("value", (snapshot) => {
+      if (snapshot.exists()){
+        console.log("Data baru diterima dari sensor.");
+        renderData(snapshot.val());
+      }
+    });
+
+  </script>
+</body>
+</html>

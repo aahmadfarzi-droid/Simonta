@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="google" content="notranslate">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tentang Sistem - Monitoring Tanah</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #a8e063, #56ab2f);
+      color: white;
+      display: flex;
+    }
+    .sidebar {
+  width: 250px;
+  padding: 20px;
+  background: linear-gradient(to bottom, #2e7d32, #ffffff); /* hijau tua ke putih */
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateX(0);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1001;
+}
+
+    .sidebar h2 {
+      margin-top: 40px;
+      font-size: 22px;
+      margin-bottom: 30px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+    }
+    .main {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+    .topbar {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+    .content {
+    background-color: #2e7d32; 
+    padding: 30px;
+    border-radius: 12px;
+    line-height: 1.7;
+    color: white;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+    ul {
+      padding-left: 20px;
+    }
+
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 10px;
+      color: white;
+      background: none;
+      border: none;
+      z-index: 1002;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.active { transform: translateX(0); }
+      .hamburger { display: block; }
+      .main { padding: 20px; margin: 0; margin-top: 50px; }
+      .topbar { text-align: center; }
+      .overlay.active { display: block; }
+    }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</head>
+<body>
+  <button class="hamburger" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar" id="sidebar">
+    <h2>IoT Monitoring</h2>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+      <li><a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      <li><a href="panduan.html"><i class="fas fa-book"></i> Panduan Sistem</a></li>
+    </ul>
+    <div style="margin-top: 40px; background-color: #1b5e20; padding: 12px; border-radius: 8px; text-align: center; font-size: 12px; color: #f0f0f0; line-height: 1.5;">
+      <strong>Developer</strong><br>
+      Ahmad Farzi Anwar<br>
+      <a href="mailto:ahmadfarzianwar4@gmail.com" style="color: #a5d6a7;">ahmadfarzianwar4@gmail.com</a><br>
+      <a href="https://instagram.com/_ahmadfarzi29" target="_blank" style="color: #a5d6a7;">_ahmadfarzi29</a>
+    </div>
+    <div style="margin-top: 20px; background-color: #ffffff; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; color: #2e7d32; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+      <i class="fas fa-circle" style="color: #4caf50;"></i> <span style="margin-left: 6px;">Sistem Aktif</span>
+    </div>        
+    <div id="sidebar-clock" style="margin-top: 20px; font-size: 12px; color: #f0f0f0;"></div>
+  </div>     
+  </div>
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <div class="main">
+    <div class="topbar">
+      Informasi Sistem Monitoring Tanah Berbasis IoT
+    </div>
+    <div class="content">
+      <h1>Tentang Sistem</h1>
+      <p>Sistem ini dikembangkan untuk memantau kondisi tanah secara real-time menggunakan sensor kelembaban dan suhu yang terintegrasi dengan modul IoT (seperti ESP32). Data yang diperoleh akan ditampilkan secara langsung melalui dashboard ini, serta dapat dilihat dalam bentuk riwayat dan grafik.</p>
+      <p>Tujuan dari sistem ini adalah untuk membantu petani, peneliti, dan pihak terkait dalam mengetahui kondisi tanah secara akurat sehingga pengambilan keputusan menjadi lebih efektif dan efisien.</p>
+      <p><strong>Fitur utama sistem:</strong></p>
+      <ul>
+        <li>Monitoring suhu & kelembaban tanah secara realtime</li>
+        <li>Riwayat data yang tersimpan otomatis</li>
+        <li>Grafik visualisasi data untuk analisis</li>
+      </ul>
+      <p>Pengembangan sistem oleh: <strong>Ahmad Farzi Anwar</strong> - Sistem Informasi - Universitas Islam Negeri Raden Intan Lampung</p>
+    </div>
+    <footer style="text-align: center; padding: 20px; color: rgb(17, 16, 16); font-size: 14px;">
+      © 2025 Ahmad Farzi Anwar. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

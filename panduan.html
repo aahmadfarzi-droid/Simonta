@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="google" content="notranslate">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panduan - Monitoring Tanah</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #a8e063, #56ab2f);
+      color: white;
+      display: flex;
+    }
+    .sidebar {
+  width: 250px;
+  padding: 20px;
+  background: linear-gradient(to bottom, #2e7d32, #ffffff); 
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateX(0);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1001;
+}
+
+    .sidebar h2 { margin-top: 40px; font-size: 22px; margin-bottom: 30px; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar ul li { margin: 15px 0; }
+    .sidebar ul li a { color: white; text-decoration: none; }
+    .main {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+    .topbar {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+    .content {
+      background-color: #2e7d32; 
+    padding: 30px;
+    border-radius: 12px;
+    line-height: 1.7;
+    color: white;
+    }
+    h1 {
+      color: white;
+    }
+    ol {
+      padding-left: 20px;
+    }
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 10px;
+      color: white;
+      background: none;
+      border: none;
+      z-index: 1002;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.active { transform: translateX(0); }
+      .hamburger { display: block; }
+      .main { padding: 20px; margin: 0; margin-top: 50px; }
+      .topbar { text-align: center; }
+      .overlay.active { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <button class="hamburger" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar" id="sidebar">
+    <h2>IoT Monitoring</h2>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+      <li><a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+    <div style="margin-top: 40px; background-color: #1b5e20; padding: 12px; border-radius: 8px; text-align: center; font-size: 12px; color: #f0f0f0; line-height: 1.5;">
+      <strong>Developer</strong><br>
+      Ahmad Farzi Anwar<br>
+      <a href="mailto:ahmadfarzianwar4@gmail.com" style="color: #a5d6a7;">ahmadfarzianwar4@gmail.com</a><br>
+      <a href="https://instagram.com/_ahmadfarzi29" target="_blank" style="color: #a5d6a7;">_ahmadfarzi29</a>
+    </div>
+    <div style="margin-top: 20px; background-color: #ffffff; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; color: #2e7d32; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+      <i class="fas fa-circle" style="color: #4caf50;"></i> <span style="margin-left: 6px;">Sistem Aktif</span>
+    </div>        
+    <div id="sidebar-clock" style="margin-top: 20px; font-size: 12px; color: #f0f0f0;"></div>
+  </div>
+
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <div class="main">
+    <div class="topbar">Panduan penggunaan sistem monitoring tanah</div>
+
+    <div class="content">
+      <h1>Panduan Pengguna</h1>
+      <p>Ikuti langkah-langkah berikut untuk menggunakan sistem monitoring tanah berbasis IoT:</p>
+      <ol>
+        <li><strong>Login:</strong> Masuk ke sistem menggunakan akun yang telah terdaftar.</li>
+        <li><strong>Dashboard:</strong> Lihat ringkasan suhu dan kelembaban terkini.</li>
+        <li><strong>Realtime:</strong> Pantau data sensor secara langsung.</li>
+        <li><strong>Riwayat:</strong> Lihat histori data suhu dan kelembaban.</li>
+        <li><strong>Grafik:</strong> Analisis tren data dalam bentuk grafik.</li>
+        <li><strong>Export:</strong> Unduh data riwayat dalam bentuk Excel atau PDF.</li>
+        <li><strong>Logout:</strong> Keluar dari sistem saat selesai.</li>
+      </ol>
+      <p>Pastikan perangkat IoT tetap terhubung dengan internet untuk memastikan data dapat dipantau secara real-time.</p>
+    </div>
+    <footer style="text-align: center; padding: 20px; color: rgb(17, 16, 16); font-size: 14px;">
+      © 2025 Ahmad Farzi Anwar. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Sensor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      background-color: #F9FAF9; 
+    }
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 20px;
+      z-index: 1001;
+      transition: transform 0.3s ease-in-out;
+      background: linear-gradient(to bottom, #2e7d32, #ffffff);
+      color: white;
+      transform: translateX(0);
+    }
+    .sidebar h2 {
+      font-size: 1.5rem;
+      margin-top: 40px;
+      margin-bottom: 2rem;
+      font-weight: bold;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+    .sidebar ul li a {
+      display: flex;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      transition: background-color 0.3s;
+    }
+    .sidebar ul li a:hover {
+      background-color: #4CAF50;
+    }
+    .sidebar ul li a i {
+      margin-right: 10px;
+      width: 20px;
+    }
+    .main-content {
+      flex: 1;
+      margin-left: 250px;
+    }
+    .hamburger {
+        display: none;
+    }
+    .overlay {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        body {
+            display: block;
+        }
+        .sidebar {
+            transform: translateX(-100%);
+        }
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .hamburger {
+            display: block;
+            position: absolute;
+            top: 22px;
+            left: 20px;
+            z-index: 1002;
+            font-size: 24px;
+            color: white;
+            background: transparent;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+        .overlay.active {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+    }
+  </style>
+</head>
+<body>
+
+<button class="hamburger" id="menu-toggle"><i class="fas fa-bars"></i></button>
+
+<div class="sidebar" id="sidebar">
+  <h2 class="text-2xl font-bold mb-8 mt-5">IoT Monitoring</h2>
+  <ul class="space-y-2">
+    <li>
+      <a href="panduan.html" class="flex items-center p-2 rounded-lg hover:bg-green-700">
+        <i class="fas fa-book w-6"></i> 
+        <span>Panduan Sistem</span>
+      </a>
+    </li>
+    <li>
+      <a href="logout.html" class="flex items-center p-2 rounded-lg hover:bg-green-700">
+          <i class="fas fa-sign-out-alt w-6"></i>
+          <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+  <div class="absolute bottom-20 left-5 right-5">
+      <div style="background-color: #1b5e20; padding: 12px; border-radius: 8px; text-align: center; font-size: 12px; color: #f0f0f0; line-height: 1.5;">
+          <strong>Developer</strong><br>
+          Ahmad Farzi Anwar<br>
+          <a href="mailto:ahmadfarzianwar4@gmail.com" style="color: #a5d6a7;">ahmadfarzianwar4@gmail.com</a><br>
+          <a href="https://instagram.com/_ahmadfarzi29" target="_blank" style="color: #a5d6a7;">_ahmadfarzi29</a>
+      </div>
+  </div>
+  <div class="absolute bottom-5 left-5 right-5">
+    <div class="bg-white rounded-lg px-4 py-3 text-center shadow-md">
+      <p class="text-sm font-semibold text-green-700">
+        <i class="fas fa-circle text-green-500 mr-2 text-xs"></i>Sistem Aktif
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="main-content">
+    <div class="relative bg-gradient-to-r from-[#a8e063] to-[#56ab2f] px-5 pt-16 md:pt-5 pb-20 shadow-md">
+      <div class="flex items-center justify-between">
+        <h1 class="text-white font-bold text-xl select-none">Dashboard Simonta</h1>
+      </div>
+      
+      <div class="mt-8 w-2/3 md:max-w-xs">
+        <h2 class="text-white text-xl md:text-2xl font-normal leading-tight select-text">Assalamu'alaikum , Selamat Datang Di Website Simonta</h2>
+        <p class="text-white text-xl md:text-2xl font-normal leading-tight select-text">Sistem Monitoring Tanah</p>
+      </div>
+      
+      <a href="profil.html">
+        <img alt="User icon" class="absolute right-5 top-14 w-28 h-28 rounded-full border-4 border-white hover:scale-105 transition duration-300 shadow-lg" decoding="async" src="IMG-20240710-WA0034.jpg" />
+      </a>      
+    </div>
+
+    <main class="flex-grow px-5 pt-8 pb-10 grid grid-cols-2 lg:grid-cols-3 gap-6">
+       <a href="realtime.html" class="bg-[#DEF9E2] rounded-xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transition">
+        <img src="https://storage.googleapis.com/a1aa/image/4c581599-de0f-432b-578e-c256f741ce24.jpg" class="w-12 h-12" />
+        <p class="text-sm text-center">Realtime<br/>Sensor</p>
+      </a>
+      <a href="history.html" class="bg-[#E3F2FD] rounded-xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transition">
+        <img src="https://storage.googleapis.com/a1aa/image/06479440-cfe2-4a88-1c9d-98f6c667d206.jpg" class="w-12 h-12" />
+        <p class="text-sm text-center">History<br/>Sensor</p>
+      </a>
+      <a href="grafik.html" class="bg-[#FFF8DC] rounded-xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transition">
+        <img src="https://storage.googleapis.com/a1aa/image/f7192d8b-d1e6-4c35-5fc1-2c265a11579a.jpg" class="w-12 h-12" />
+        <p class="text-sm text-center">Grafik<br/>Sensor</p>
+      </a>
+      <a href="kategori.html" class="bg-[#F3E5F5] rounded-xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transition">
+        <img src="https://storage.googleapis.com/a1aa/image/54f864d7-5ba4-4a89-2589-58588c39319d.jpg" class="w-12 h-12" />
+        <p class="text-sm text-center">Kategori<br/>Sensor</p>
+      </a>
+      <a href="panduan.html" class="bg-[#FEF9E7] rounded-xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transition">
+        <img src="https://storage.googleapis.com/a1aa/image/251448f8-3730-4f93-5ba8-3cdd55a8e668.jpg" class="w-12 h-12" />
+        <p class="text-sm text-center">Panduan<br/>Pengoperasi</p>
+      </a>
+      <a href="tentang.html" class="bg-[#F8F9FA] rounded-xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transition">
+        <img src="https://storage.googleapis.com/a1aa/image/08c7ff13-3a9d-4a2e-02a5-fca48e8572e5.jpg" class="w-12 h-12" />
+        <p class="text-sm text-center">Tentang<br/>Aplikasi</p>
+      </a>
+    </main>
+    
+    <footer style="text-align: center; padding: 20px; color: rgb(17, 16, 16); font-size: 14px;">
+      © 2025 Ahmad Farzi Anwar. All rights reserved.
+    </footer>
+</div>
+
+
+<script>
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
+  const menuToggle = document.getElementById("menu-toggle");
+
+  function toggleSidebar() {
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+  }
+
+  menuToggle.addEventListener("click", toggleSidebar);
+  overlay.addEventListener("click", toggleSidebar);
+</script>
+
+</body>
+</html>
